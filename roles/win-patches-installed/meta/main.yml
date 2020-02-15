@@ -1,0 +1,9 @@
+galaxy_info:
+  author: Mukul Malhotra
+  description: Ensono Windows patch update which will list Installed patches on Windows servers
+  company: Ensono
+  min_ansible_version: 2.9
+  platforms:
+    - name: Windows
+      versions:
+      - all
