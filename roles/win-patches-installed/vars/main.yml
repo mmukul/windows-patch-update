@@ -1,10 +1,6 @@
 ---
 # vars file for win-patches-installed
 
-win_update_sd: C:\Windows\SoftwareDistribution\
 win_patch_report: C:\ansible_Installed_patch_report.csv
-source_dir_sd: SoftwareDistribution
-target_dir_sd: SoftwareDistribution.old
-dest_folder_cat: C:\Windows\System32\catroot2
-source_dir_cat: catroot2
-target_dir_cat: catroot2.old
+win_patch_report_file: C:\ansible_Installed_patch_report.csv
+playbook_role_dir: "~/win-patch-update/roles/win-patches-installed/files"

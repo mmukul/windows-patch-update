@@ -1,68 +1,43 @@
 ---
+- name: Copy Script to Reset Windows Update Components
+  win_copy:
+     src: files/ResetWUEng
+     dest: C:\Temp\
+     #remote_src: yes   
 
-- name: Stop windows services       #run as administrator
-  win_service:
-    name: "{{ item }}"
-    state: stopped
-  with_items:
-    - wuauserv
-    - cryptsvc
-    - bits
-    - msiserver
-    - appidsvc
+- name: Execute windows script
+  win_shell: C:\Temp\ResetWUEng
 
-- name: Rename the directories
-  win_command: "{{ item }}"
-  with_items:
-    - "cmd.exe /c rename {{ win_update_sd }}\\{{ source_dir_sd }} {{ target_dir_sd }}"
-    - "cmd.exe /c rename {{ dest_folder_cat }}\\{{ source_dir_cat }} {{ target_dir_cat }}"
-
-# Clear Windows update software distribution folder to fix error 0x8024000E
-- name: Clear Windows update software distribution folder
-  win_file:
-    path: '{{ win_update_sd }}'
-    state: absent
-
-# Create Directory software distribution folder
-- name: Create Directory software distribution folder again
-  win_file:
-    state: directory
-    path: '{{ win_update_sd }}'
-
-- name: Start windows services       #run as administrator
-  win_service:
-    name: "{{ item }}"
-    start_mode: auto
-    state: started
-  with_items:
-    - wuauserv
-    - cryptsvc
-    - bits
-    - msiserver
-    - appidsvc
-
-#- name: Update windows settings
-#  win_shell: "wuauclt.exe /updatenow"
-
-- name: Scan the windows filesystem to restore any corrupted files
-  win_shell: "sfc /scannow"
 
 # Search and return list of patch updates
-- name: Search and return list of patch updates found in {{ win_patch_log }}
+- name: Search and return list of patch updates found in {{ win_patch_report }}
   win_updates:
     category_names:
      - SecurityUpdates
      - CriticalUpdates
      - UpdateRollups
     state: searched
-    log_path: '{{ win_patch_log }}'
-
-# Read CSV file
-- name: Read the csv file
-  read_csv:
-    path: '{{ win_patch_log }}'
-    #delimiter: ','
-  register: report_csv
+    log_path: '{{ win_patch_report }}'
+  register: patch_report
 
 - debug:
-    var: report_csv
+    var: patch_report
+
+- name: Remove Windows Script
+  win_file:
+    path: C:\Temp\ResetWUEng
+    state: absent
+
+- name: Fetch Windows Patch Report to Ansible Controller
+  win_copy:
+     src: "{{ win_patch_report_file }}"
+     dest: /tmp
+     remote_src: yes
+
+- name: Read users from CSV file and return a list
+  read_csv:
+    path: '{{ win_patch_report }}'
+    fieldnames: date,time
+    delimiter: '  '
+  register: users
+  delegate_to: localhost
