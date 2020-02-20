@@ -30,14 +30,14 @@
 
 - name: Fetch Windows Patch Report to Ansible Controller
   win_copy:
-     src: "{{ win_patch_report_file }}"
-     dest: /tmp
+     src: /tmp
+     dest: "{{ win_patch_report_file }}"
      remote_src: yes
 
 - name: Read users from CSV file and return a list
   read_csv:
     path: '{{ win_patch_report }}'
-    fieldnames: date,time
+    fieldnames: Date,Clasification,Title
     delimiter: '  '
-  register: users
+  register: report
   delegate_to: localhost
